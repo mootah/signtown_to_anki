@@ -198,22 +198,18 @@ def write_in_apkg(notes: list):
         css=templates["style"],
     )
 
-    deck_id = random.randrange(1 << 30, 1 << 31)
+    decks = {}
+    for n in notes:
+        category = n["category"]
+        if category not in decks:
+            deck_id = random.randrange(1 << 30, 1 << 31)
+            deck_name = f"手話タウンハンドブック::{category}"
+            decks[category] = genanki.Deck(deck_id, deck_name)
 
-    deck = genanki.Deck(
-        deck_id,
-        "手話タウンハンドブック"
-    )
+        note = genanki.Note(model=model, fields=list(n.values()))
+        decks[category].add_note(note)
 
-    rows = [list(n.values()) for n in notes]
-    for row in rows:
-        note = genanki.Note(
-            model=model,
-            fields=row,
-        )
-        deck.add_note(note)
-
-    package = genanki.Package(deck)
+    package = genanki.Package(list(decks.values()))
 
     if DOWNLOAD:
         media = []
