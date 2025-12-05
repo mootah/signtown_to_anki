@@ -1,15 +1,15 @@
 <div class="pane">
   <div class="section">
-    {{^image}}
+    {{^image_tag}}
     <div class="center">
       <video src="{{video_url}}" controls autoplay loop></video>
     </div>
-    {{/image}}
-    {{#image}}
+    {{/image_tag}}
+    {{#image_tag}}
     <div class="center">
       {{image}}
     </div>
-    {{/image}}
+    {{/image_tag}}
   </div>
   <hr />
   <div class="section">
