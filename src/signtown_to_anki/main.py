@@ -250,10 +250,13 @@ def convert_to_image(video_path, image_path):
     cmd = [
         ffmpeg_exe, "-i", video_path,
         "-vcodec", "libwebp",
-        "-filter:v", "fps=15,scale=384:-1",
+        # "-filter:v", "fps=15,scale=384:-1",
+        # "-filter:v", "fps=18,scale=384:-1,hqdn3d=3:3:6:6",
+        "-filter:v", "fps=18,scale=384:-1",
         "-lossless", "0",
         "-compression_level", "6",
-        "-qscale", "40",
+        "-preset", "1",
+        "-quality", "70",
         "-loop", "0",
         "-loglevel", "error",
         image_path,
@@ -320,12 +323,11 @@ def make_media(notes):
         print("webmに変換しています...")
         webm_videos = []
         args = []
-        for n in track(notes):
+        for n in notes:
             input_path = f"{media_path}/{n["rawvideo_file"]}"
             output_path = f"{media_path}/{n["webm_file"]}"
             args.append((input_path, output_path))
             webm_videos.append(output_path)
-            # convert_to_webm(input_path, output_path)
 
         multi_run(convert_to_webm, args)
         return webm_videos
@@ -359,14 +361,17 @@ def load_templates(filenames):
 
 def create_notes(signs: list) -> list[dict]:
     notes = []
+    unique_id = ""
+    # alphabet = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    # unique_id = "_" + "".join(random.choice(alphabet) for _ in range(5))
 
     for sign in signs:
         note_id     = sign["id"]
         definition  = sign["signDefinitions"]["ja"][0]["def"]
         position    = sign["signDefinitions"]["ja"][0]["pos"]
         rawvideo    = f"{note_id}.raw.mp4"
-        mp4_file    = f"{note_id}.mp4"
-        webm_file   = f"{note_id}.webm"
+        mp4_file    = f"{note_id}{unique_id}.mp4"
+        webm_file   = f"{note_id}{unique_id}.webm"
         video_file  = rawvideo
 
         if config["should_convert"] and config["format"] == "mp4":
@@ -375,14 +380,14 @@ def create_notes(signs: list) -> list[dict]:
             video_file = webm_file
 
         # image_file  = f"{note_id}.gif"
-        image_file  = f"{note_id}.webp"
+        image_file  = f"{note_id}{unique_id}.webp"
         video_url   = sign["defaultVideoUrl"]
         page_url    = f"https://handbook.sign.town/ja/signs/{note_id}?sl=JSL"
         category    = sign["category"]
         # category_id    = sign["category_id"]
 
         notes.append({
-            "id":  note_id,
+            "id":  f"{note_id}{unique_id}",
             "def": definition,
             "pos": position,
             "rawvideo_file": rawvideo,
