@@ -1,7 +1,7 @@
 
 # 手話タウン to Anki
 
-このツールは [手話タウンハンドブック](https://handbook.sign.town/ja/feed?sl=JSL) の学習資料から GIF を生成し、Anki パッケージにします。
+このツールは [手話タウンハンドブック](https://handbook.sign.town/ja/feed?sl=JSL) の学習資料から WebP を生成し、Anki パッケージにします。
 
 現在、JSLにのみ対応しています。
 生成されるカードは、現在確認している数で延べ 1,290 枚です。
