@@ -483,7 +483,7 @@ def create_image_model() -> genanki.Model:
     return model
 
 def write_in_apkg(notes: list, media: list):
-    if config["should_make_image"]:
+    if config["format"] == "webp":
         model = create_image_model()
     else:
         model = create_video_model()
