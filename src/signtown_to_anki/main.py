@@ -29,7 +29,7 @@ def read(file_path: str) -> str:
         sys.exit(1)
 
 
-def get_categories() -> dict:
+def get_categories() -> list:
     json_path = f"{config["media_path"]}/categories.json"
 
     if os.path.exists(json_path):
@@ -483,32 +483,32 @@ def create_image_model() -> genanki.Model:
     )
     return model
 
-def write_in_apkg(notes: list, media: list):
+def write_in_apkg(notes: list, media: list, cats: list):
     if config["format"] == "webp":
         model = create_image_model()
     else:
         model = create_video_model()
 
-    deck_id = random.randrange(1 << 30, 1 << 31)
-
-    deck = genanki.Deck(
-        deck_id,
-        "手話タウンハンドブック"
-    )
+    decks = {}
+    for cat in cats:
+        category = cat["title"]
+        deck_id = random.randrange(1 << 30, 1 << 31)
+        deck = genanki.Deck(
+            deck_id,
+            f"手話タウンハンドブック::{category}"
+        )
+        decks[category] = deck
 
     keys = [f["name"] for f in model.fields]
-    rows = []
     for n in notes:
         row = [n.get(key) for key in keys]
-        rows.append(row)
-    for row in rows:
         note = genanki.Note(
             model=model,
             fields=row,
         )
-        deck.add_note(note)
+        decks[n["category"]].add_note(note)
 
-    package = genanki.Package(deck)
+    package = genanki.Package(list(decks.values()))
     package.media_files = media
 
     apkg_path = f"手話タウンハンドブック.apkg"
@@ -549,7 +549,7 @@ def main(**kwargs):
     notes = create_notes(signs)
     media = make_media(notes)
     print("Ankiパッケージを生成しています...")
-    write_in_apkg(notes, media)
+    write_in_apkg(notes, media, cats)
 
 if __name__ == "__main__":
     main()

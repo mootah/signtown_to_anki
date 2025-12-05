@@ -7,7 +7,7 @@
     {{/image_tag}}
     {{#image_tag}}
     <div class="center">
-      {{image}}
+      {{image_tag}}
     </div>
     {{/image_tag}}
   </div>
