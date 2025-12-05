@@ -243,12 +243,14 @@ img {
   object-fit: contain;
   width: 100%;
   border-radius: 6px;
+  margin: 0 auto;
 }
 
 video {
   object-fit: contain;
   width: 100%;
   border-radius: 6px;
+  margin: 0 auto;
 }
 
 .buttonGroup {
