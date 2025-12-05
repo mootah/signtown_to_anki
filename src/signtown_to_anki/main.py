@@ -250,10 +250,10 @@ def convert_to_image(video_path, image_path):
     cmd = [
         ffmpeg_exe, "-i", video_path,
         "-vcodec", "libwebp",
-        "-filter:v", "fps=15",
+        "-filter:v", "fps=15,scale=384:-1",
         "-lossless", "0",
         "-compression_level", "6",
-        "-qscale", "50",
+        "-qscale", "40",
         "-loop", "0",
         "-loglevel", "error",
         image_path,
@@ -335,7 +335,7 @@ def make_media(notes):
         images = []
         args = []
         for n in notes:
-            video_path = f"{media_path}/{n["mp4_file"]}"
+            video_path = f"{media_path}/{n["rawvideo_file"]}"
             image_path = f"{media_path}/{n["image"]}"
             args.append((video_path, image_path))
             images.append(image_path)
@@ -525,8 +525,6 @@ def write_in_apkg(notes: list, media: list, cats: list):
     help="フォーマットを選択",
     show_default=True, show_choices=True,
     type=click.Choice(("mp4", "webm", "webp"), case_sensitive=False))
-@click.option("--use-video", is_flag=True,
-    help="画像を生成を行わず、カードに動画を使用します（--no-conversionで自動選択されます）")
 @click.option("--template", "-t", default="jsl-ja",
     help="テンプレートを選択",
     show_default=True, show_choices=True,

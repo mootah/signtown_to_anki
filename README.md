@@ -54,7 +54,7 @@ signtown-to-anki --no-conversion
     - `mp4`（～100KB）
     - `webm`（300KB前後）※変換に時間がかかります
 - アニメーション画像
-    - `webp`（250KB前後）
+    - `webp`（200KB前後）
 
 から選択できます。
 デフォルトでは`webp`です。
