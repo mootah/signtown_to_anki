@@ -256,7 +256,7 @@ def convert_to_image(video_path, image_path):
         "-lossless", "0",
         "-compression_level", "6",
         "-preset", "1",
-        "-quality", "70",
+        "-quality", "80",
         "-loop", "0",
         "-loglevel", "error",
         image_path,
@@ -296,7 +296,6 @@ def multi_run(func, args):
 
 def make_media(notes):
     media_path = config["media_path"]
-    os.makedirs(media_path, exist_ok=True)
 
     videos = []
     if config["should_download"]:
@@ -545,6 +544,9 @@ def main(**kwargs):
         config["should_convert"] = False
 
     
+    media_path = config["media_path"]
+    os.makedirs(media_path, exist_ok=True)
+
     print("カテゴリ一覧を読み込んでいます...")
     cats = get_categories()
     print("各カテゴリの手話一覧を読み込んでいます...")
