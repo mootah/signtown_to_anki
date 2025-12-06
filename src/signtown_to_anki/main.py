@@ -132,28 +132,30 @@ def download_video(url, video_path):
     if os.path.exists(video_path):
         return
 
+    fragment_path = f"{video_path}.part"
+
     try:
-        with open(video_path, "wb") as f:
+        with open(fragment_path, "wb") as f:
             curl = pycurl.Curl()
             curl.setopt(curl.URL, url)
             curl.setopt(curl.WRITEDATA, f)
-            curl.setopt(curl.NOPROGRESS, False)
-            curl.setopt(curl.XFERINFOFUNCTION, lambda dltotal, dlnow, ultotal, ulnow: None)
             curl.perform()
             curl.close()
-    except KeyboardInterrupt:
-        print("ダウンロードを中断しています...")
-        if os.path.exists(video_path):
-            os.remove(video_path)
-        sys.exit(1)
     except pycurl.error as e:
-        print(f"ダウンロードできませんでした。: {e}")
-        if os.path.exists(video_path):
-            os.remove(video_path)
-    except Exception as e:
-        print(f"ダウンロードできませんでした。: {e}")
-        if os.path.exists(video_path):
-            os.remove(video_path)
+        try:
+            media_path = config["media_path"]
+            fragments = [f for f in os.listdir(media_path) if f.endswith(".part")]
+            for f in fragments:
+                os.remove(os.path.join(media_path, f))
+        except:
+            pass
+
+        code, _ = e.args
+        if code == 23:
+            raise(KeyboardInterrupt)
+        raise(e)
+    
+    os.rename(fragment_path, video_path)
 
 
 def convert_to_mp4(input_path, output_path):
@@ -301,30 +303,39 @@ def multi_run(func, args):
 
 def make_media(notes):
     media_path = config["media_path"]
-
     videos = []
-    if config["should_download"]:
-        print("動画をダウンロードしています...")
+
+    if not config["should_download"]:
+        return videos
+
+    print("動画をダウンロードしています...")
+    try:
         for n in track(notes, description=""):
             video_path = f"{media_path}/{n["original_video_file"]}"
             download_video(n["video_url"], video_path)
             videos.append(video_path)
+    except KeyboardInterrupt:
+        print("ダウンロードを中断しました。")
+        sys.exit(1)
+    except Exception as e:
+        print(f"ダウンロードできませんでした。: {e}")
+        sys.exit(1)
+
+    output_media = []
 
     if config["should_convert"] and config["format"] == "mp4":
         print("動画を圧縮しています...")
-        mp4_videos = []
         args = []
         for n in note:
             input_path = f"{media_path}/{n["original_video_file"]}"
             output_path = f"{media_path}/{n["video"]}"
             args.append((input_path, output_path))
-            mp4_videos.append(output_path)
+            output_media.append(output_path)
 
         multi_run(convert_to_mp4, args)
-        return mp4_videos
+
     elif config["should_convert"]:
         print(f"{config["format"]}に変換しています...")
-        output_media = []
         args = []
         for n in notes:
             input_path = f"{media_path}/{n["original_video_file"]}"
@@ -339,9 +350,8 @@ def make_media(notes):
         elif config["format"] == "avif":
             multi_run(convert_to_avif, args)
 
-        return output_media
+    return output_media
 
-    return videos
 
 def load_templates():
     if config["template_data"]:
@@ -374,7 +384,7 @@ def create_notes(signs: list) -> list[dict]:
     for sign in signs:
         note_id        = sign["id"]
         definition     = sign["signDefinitions"]["ja"][0]["def"]
-        position       = sign["signDefinitions"]["ja"][0]["pos"]
+        # position       = sign["signDefinitions"]["ja"][0]["pos"]
         original_video = f"{note_id}.raw.mp4"
         media_file  = f"{note_id}.{ext}"
         video_url   = sign["defaultVideoUrl"]
@@ -390,7 +400,6 @@ def create_notes(signs: list) -> list[dict]:
         notes.append({
             "id":  f"{note_id}",
             "def": definition,
-            "pos": position,
             "original_video_file": original_video,
             "media_file": media_file,
             "video": media_file,
@@ -428,12 +437,10 @@ def create_video_model() -> genanki.Model:
         fields=[
             {"name": "id"},
             {"name": "def"},
-            {"name": "pos"},
             {"name": "video"},
             {"name": "video_tag"},
             {"name": "video_url"},
             {"name": "page_url"},
-            {"name": "category"},
         ],
         templates=templates,
         css=template_files["style"],
@@ -463,11 +470,9 @@ def create_image_model() -> genanki.Model:
         fields=[
             {"name": "id"},
             {"name": "def"},
-            {"name": "pos"},
             {"name": "image_tag"},
             {"name": "video_url"},
             {"name": "page_url"},
-            {"name": "category"},
         ],
         templates=templates,
         css=template_files["style"],
@@ -546,3 +551,4 @@ def main(**kwargs):
 
 if __name__ == "__main__":
     main()
+
